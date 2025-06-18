@@ -144,12 +144,18 @@ class WebDriverPool:
         options.add_argument("--disable-sync")
         options.add_argument("--disable-plugins")
         options.add_argument("--disable-images")
-        options.add_argument("--disable-javascript")  # If scraping doesn't need JS
+        # options.add_argument("--disable-javascript")  # Commented out as it might be needed for dynamic content
         options.add_argument("--memory-pressure-off")
         options.add_argument("--max_old_space_size=128")
         
         # User agent
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        
+        # Check if running in Docker/Render environment
+        if os.environ.get('PUPPETEER_EXECUTABLE_PATH'):
+            chrome_path = os.environ.get('PUPPETEER_EXECUTABLE_PATH')
+            options.binary_location = chrome_path
+            logger.info(f"Using Chrome binary at: {chrome_path}")
         
         return options
     
