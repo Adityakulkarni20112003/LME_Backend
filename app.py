@@ -110,7 +110,39 @@ class WebDriverPool:
         """Create a new WebDriver instance"""
         try:
             options = self._get_browser_options()
-            driver = webdriver.Chrome(options=options)
+            
+            # Try different approaches to create a driver
+            try:
+                # First try with standard options
+                driver = webdriver.Chrome(options=options)
+            except Exception as e:
+                logger.warning(f"Standard Chrome initialization failed: {e}")
+                # Try with service object
+                from selenium.webdriver.chrome.service import Service
+                
+                # Check for Chrome in standard locations
+                chrome_paths = [
+                    '/usr/bin/google-chrome-stable',  # Linux
+                    '/usr/bin/google-chrome',         # Linux alternative
+                    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS
+                    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',    # Windows
+                    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'  # Windows 32-bit
+                ]
+                
+                chrome_path = None
+                for path in chrome_paths:
+                    if os.path.exists(path):
+                        chrome_path = path
+                        break
+                
+                if chrome_path:
+                    logger.info(f"Found Chrome at: {chrome_path}")
+                    options.binary_location = chrome_path
+                
+                # Try with service
+                service = Service()
+                driver = webdriver.Chrome(service=service, options=options)
+            
             driver.set_page_load_timeout(CONFIG['PAGE_LOAD_TIMEOUT'])
             
             with self.lock:

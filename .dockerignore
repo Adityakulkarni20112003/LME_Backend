@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+.vscode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+scraper.log
+scraped_csv/*.csv
+*.log
+.DS_Store 

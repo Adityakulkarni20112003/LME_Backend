@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10.12-slim
 
 # Install Chrome dependencies
 RUN apt-get update && apt-get install -y \
@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     ca-certificates \
     apt-transport-https \
+    build-essential \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Chrome
@@ -18,14 +20,27 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 # Set working directory
 WORKDIR /app
 
-# Copy application files
-COPY . .
+# Install setuptools first
+RUN pip install --no-cache-dir setuptools wheel
+
+# Copy requirements first for better caching
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port
+# Copy application files
+COPY . .
+
+# Create CSV directory
+RUN mkdir -p scraped_csv
+
+# Set environment variables
 ENV PORT=10000
+ENV PYTHONUNBUFFERED=1
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+# Expose the port
 EXPOSE $PORT
 
 # Start the application
